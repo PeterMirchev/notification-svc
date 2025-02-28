@@ -20,7 +20,7 @@ public class Notification {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    private String email;
+    private UUID userId;
     private String subject;
     private String body;
     private NotificationType type;
