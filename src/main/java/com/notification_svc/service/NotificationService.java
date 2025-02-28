@@ -29,11 +29,11 @@ public class NotificationService {
     public NotificationPreference getNotificationPreferenceByUserId(UUID userId) {
 
         return notificationPreferenceRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceAlreadyExistsException("Notification preferences already exist for this user id - %s.".formatted(userId)));
+                .orElseThrow(() -> new ResourceAlreadyExistsException("Notification preferences not existing for user id - %s.".formatted(userId)));
     }
     public NotificationPreference createNotificationPreference(NotificationPreferenceCreateRequest request) {
 
-        Optional<NotificationPreference> preference = Optional.ofNullable(getNotificationPreferenceByUserId(request.getUserId()));
+        Optional<NotificationPreference> preference = notificationPreferenceRepository.findByUserId(request.getUserId());
 
         if (preference.isPresent()) {
             throw new ResourceAlreadyExistsException("Notification preferences already exist for this user id - %s.".formatted(request.getUserId()));
