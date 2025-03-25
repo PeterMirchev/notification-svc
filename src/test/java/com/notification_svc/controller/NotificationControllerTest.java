@@ -7,6 +7,7 @@ import com.notification_svc.controller.dto.NotificationPreferenceCreateRequest;
 import com.notification_svc.controller.dto.NotificationPreferenceUpdateRequest;
 import com.notification_svc.controller.dto.NotificationRequest;
 import com.notification_svc.model.Notification;
+import com.notification_svc.model.NotificationPreference;
 import com.notification_svc.model.NotificationType;
 import com.notification_svc.model.SendStatus;
 import com.notification_svc.service.NotificationService;
@@ -127,5 +128,31 @@ class NotificationControllerTest {
                 .andExpect(jsonPath("userId").value(userId.toString()))
                 .andExpect(jsonPath("subject").value(notificationRequest.getSubject()))
                 .andExpect(jsonPath("status").value(SendStatus.SUCCESS.toString()));
+    }
+
+    @Test
+    void getNotificationPreference_happyPath() throws Exception {
+
+        UUID preferenceId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        NotificationPreference preference = NotificationPreference.builder()
+                .id(preferenceId)
+                .email("test@test.com")
+                .userId(userId)
+                .enableNotification(true)
+                .createdOn(LocalDateTime.now())
+                .updatedOn(LocalDateTime.now())
+                .build();
+
+        when(notificationService.getNotificationPreferenceByUserId(userId)).thenReturn(preference);
+
+        MockHttpServletRequestBuilder request = get("/api/v1/notifications/preference")
+                .contentType(MediaType.APPLICATION_JSON)
+                .param("userId", String.valueOf(userId));
+
+        mockMvc.perform(request)
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("userId").value(userId.toString()))
+                .andExpect(jsonPath("email").value(preference.getEmail()));
     }
 }
