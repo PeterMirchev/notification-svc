@@ -1,24 +1,21 @@
 package com.notification_svc.controller.dto;
 
 import com.notification_svc.model.NotificationType;
+import com.notification_svc.model.SendStatus;
 import lombok.Builder;
 import lombok.Data;
-import org.springframework.lang.NonNull;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Data
 @Builder
-public class NotificationRequest {
+public class NotificationResponse {
 
-    @NonNull
+    private UUID id;
     private UUID userId;
-    @NonNull
-    private String email;
-    @NonNull
     private String subject;
-    @NonNull
-    private String body;
-    @NonNull
     private NotificationType type;
+    private SendStatus status;
+    private LocalDateTime sent;
 }

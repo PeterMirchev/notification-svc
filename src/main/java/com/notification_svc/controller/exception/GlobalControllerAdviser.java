@@ -3,6 +3,7 @@ package com.notification_svc.controller.exception;
 import com.notification_svc.exeption.NotificationDisabledException;
 import com.notification_svc.exeption.NotificationServiceException;
 import com.notification_svc.exeption.ResourceAlreadyExistsException;
+import com.notification_svc.exeption.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -21,8 +22,15 @@ public class GlobalControllerAdviser {
     public ResponseEntity<String> handleNotificationServiceException(NotificationServiceException exception) {
 
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.CONFLICT);
-    }@ExceptionHandler(NotificationDisabledException.class)
+    }
+
+    @ExceptionHandler(NotificationDisabledException.class)
     public ResponseEntity<String> handleNotificationDisabledException(NotificationDisabledException exception) {
+
+        return new ResponseEntity<>(exception.getMessage(), HttpStatus.CONFLICT);
+    }
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<String> handleNotificationDisabledException(ResourceNotFoundException exception) {
 
         return new ResponseEntity<>(exception.getMessage(), HttpStatus.CONFLICT);
     }

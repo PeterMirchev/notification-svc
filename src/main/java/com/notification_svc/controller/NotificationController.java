@@ -1,26 +1,25 @@
 package com.notification_svc.controller;
 
-import com.notification_svc.controller.dto.NotificationPreferenceCreateRequest;
-import com.notification_svc.controller.dto.NotificationPreferenceResponse;
-import com.notification_svc.controller.dto.NotificationPreferenceUpdateRequest;
+import com.notification_svc.controller.dto.*;
+import com.notification_svc.model.Notification;
 import com.notification_svc.model.NotificationPreference;
 import com.notification_svc.model.mapper.NotificationMapper;
-import com.notification_svc.service.EmailService;
 import com.notification_svc.service.NotificationService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.UUID;
 
 @RestController()
 @RequestMapping("/api/v1/notifications")
 public class NotificationController {
 
     private final NotificationService notificationService;
-    private final EmailService emailService;
 
-    public NotificationController(NotificationService notificationService, EmailService emailService) {
+    public NotificationController(NotificationService notificationService) {
         this.notificationService = notificationService;
-        this.emailService = emailService;
     }
 
     @PostMapping("/preference")
@@ -28,7 +27,7 @@ public class NotificationController {
 
         NotificationPreference preference = notificationService.createNotificationPreference(request);
 
-        NotificationPreferenceResponse response = NotificationMapper.mapToNotificationPreferenceResponce(preference);
+        NotificationPreferenceResponse response = NotificationMapper.mapToNotificationPreferenceResponse(preference);
 
         return  ResponseEntity.status(HttpStatus.CREATED)
                 .body(response);
@@ -39,9 +38,55 @@ public class NotificationController {
 
         NotificationPreference preference = notificationService.updateNotificationPreference(request);
 
-        NotificationPreferenceResponse response = NotificationMapper.mapToNotificationPreferenceResponce(preference);
+        NotificationPreferenceResponse response = NotificationMapper.mapToNotificationPreferenceResponse(preference);
 
         return  ResponseEntity.status(HttpStatus.OK)
                 .body(response);
+    }
+
+    @PutMapping("/toggle")
+    public ResponseEntity<NotificationPreferenceResponse> switchNotification(@RequestParam(name = "userId") UUID userId) {
+
+        NotificationPreference preference = notificationService.switchNotificationPreference(userId);
+
+        NotificationPreferenceResponse response = NotificationMapper.mapToNotificationPreferenceResponse(preference);
+
+        return  ResponseEntity.status(HttpStatus.OK)
+                .body(response);
+    }
+
+    @PostMapping("/notification")
+    public ResponseEntity<NotificationResponse> sendNotification(@RequestBody NotificationRequest notificationRequest) {
+
+        Notification notification = notificationService.sendNotification(notificationRequest);
+
+        NotificationResponse response = NotificationMapper.mapToNotificationResponse(notification);
+
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(response);
+    }
+
+    @GetMapping("/preference")
+    public ResponseEntity<NotificationPreferenceResponse> getNotificationPreference(@RequestParam(name = "userId") UUID userId) {
+
+        NotificationPreference preference = notificationService.getNotificationPreferenceByUserId(userId);
+
+        NotificationPreferenceResponse response = NotificationMapper.mapToNotificationPreferenceResponse(preference);
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping()
+    public ResponseEntity<List<NotificationResponse>> getAllNotifications(@RequestParam(name = "userId") UUID userId) {
+
+        List<Notification> notifications = notificationService.getNotificationsByUserId(userId);
+
+        List<NotificationResponse> responses = notifications
+                .stream()
+                .map(NotificationMapper::mapToNotificationResponse)
+                .toList();
+
+        return ResponseEntity.ok(responses);
     }
 }

@@ -6,17 +6,17 @@ import com.notification_svc.controller.dto.NotificationRequest;
 import com.notification_svc.exeption.NotificationDisabledException;
 import com.notification_svc.exeption.NotificationServiceException;
 import com.notification_svc.exeption.ResourceAlreadyExistsException;
+import com.notification_svc.exeption.ResourceNotFoundException;
 import com.notification_svc.model.Notification;
 import com.notification_svc.model.NotificationPreference;
 import com.notification_svc.model.SendStatus;
 import com.notification_svc.model.mapper.NotificationMapper;
 import com.notification_svc.repository.NotificationPreferenceRepository;
 import com.notification_svc.repository.NotificationRepository;
-import jakarta.mail.MessagingException;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -36,7 +36,7 @@ public class NotificationService {
     public NotificationPreference getNotificationPreferenceByUserId(UUID userId) {
 
         return notificationPreferenceRepository.findByUserId(userId)
-                .orElseThrow(() -> new ResourceAlreadyExistsException("Notification preferences not existing for user id - %s.".formatted(userId)));
+                .orElseThrow(() -> new ResourceNotFoundException("Notification preferences not existing for user id - %s.".formatted(userId)));
     }
     public NotificationPreference createNotificationPreference(NotificationPreferenceCreateRequest request) {
 
@@ -62,10 +62,9 @@ public class NotificationService {
         return notificationPreferenceRepository.save(notificationPreference);
     }
 
-    public void sendNotification(NotificationRequest request) {
+    public Notification sendNotification(NotificationRequest request) {
 
         NotificationPreference preference = getNotificationPreferenceByUserId(request.getUserId());
-
 
         if (!preference.isEnableNotification()) {
             throw new NotificationDisabledException("Notification services are disabled for user with id - %s.".formatted(request.getUserId()));
@@ -87,6 +86,24 @@ public class NotificationService {
             throw new NotificationServiceException("Notification failure, reason: %s".formatted(e.getMessage()), e);
         }
 
-        notificationRepository.save(notification);
+        return notificationRepository.save(notification);
+    }
+
+    public List<Notification> getNotificationsByUserId(UUID userId) {
+
+        return notificationRepository.findAllByUserId(userId);
+    }
+
+    public NotificationPreference switchNotificationPreference(UUID userId) {
+
+        NotificationPreference notificationPreference = getNotificationPreferenceByUserId(userId);
+
+        if (notificationPreference.isEnableNotification()) {
+            notificationPreference.setEnableNotification(false);
+        } else {
+            notificationPreference.setEnableNotification(true);
+        }
+
+        return notificationPreferenceRepository.save(notificationPreference);
     }
 }
